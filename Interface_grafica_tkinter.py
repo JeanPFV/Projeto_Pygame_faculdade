@@ -93,7 +93,7 @@ def modo_estudo(perguntas, root):
     random.shuffle(perguntas)
 
     for pergunta, resposta in perguntas:
-        palpite = input_with_timeout(pergunta, 0, root)
+        palpite = input_with_timeout(pergunta, tempo_de_resposta, root)
         if palpite.lower() == resposta['resposta'].lower():
             messagebox.showinfo("Correto", "Correto!", parent=root)
         else:
@@ -140,13 +140,14 @@ def modo_adptativo(matriz, tema, dificuldade, root):
 
     pontuacao = 0
     cont = 0
-    while cont != 9:
+    while cont < 9:  # Use < 9 em vez de != 9 para garantir que são feitas exatamente 9 perguntas
         perguntas = matriz[dificuldade][tema]
         perguntas = list(perguntas.items())
         random.shuffle(perguntas)
-
+        
         for pergunta, resposta in perguntas:
             palpite = input_with_timeout(pergunta, tempo_de_resposta, root)
+            
             if palpite == "dica":
                 messagebox.showinfo("Dica", resposta['dica'], parent=root)
                 pontuacao -= 1
@@ -157,9 +158,9 @@ def modo_adptativo(matriz, tema, dificuldade, root):
             else:
                 messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}", parent=root)
                 dificuldade = max(dificuldade - 1, 0)
-
+        
         cont += 1
-
+    
     messagebox.showinfo("Fim do jogo", f"Fim do jogo! Sua pontuação final é: {pontuacao}", parent=root)
 
 def iniciar_modo(modo, tema_var, dificuldade_var, root):
