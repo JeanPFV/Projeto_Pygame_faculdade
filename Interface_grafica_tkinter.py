@@ -146,6 +146,8 @@ def modo_adptativo(matriz, tema, dificuldade, root):
         random.shuffle(perguntas)
         
         for pergunta, resposta in perguntas:
+            if cont >= 9:
+                break
             palpite = input_with_timeout(pergunta, tempo_de_resposta, root)
             
             if palpite == "dica":
@@ -155,9 +157,11 @@ def modo_adptativo(matriz, tema, dificuldade, root):
                 messagebox.showinfo("Correto", "Correto!", parent=root)
                 pontuacao += 2
                 dificuldade = min(dificuldade + 1, 2)
+                break
             else:
                 messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}", parent=root)
                 dificuldade = max(dificuldade - 1, 0)
+                break
         
         cont += 1
     
