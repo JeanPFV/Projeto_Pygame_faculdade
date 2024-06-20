@@ -67,15 +67,18 @@ def modo_normal(perguntas, root, tempo_de_resposta=10):
         pergunta_label = tk.Label(root, text=pergunta)
         pergunta_label.pack()
 
-        palpite = input_with_timeout(f"Você tem {tempo_de_resposta} segundos para responder", tempo_de_resposta, root)
-        if palpite == "dica":
-            messagebox.showinfo("Dica", resposta['dica'], parent=root)
-            pontuacao -= 1
-        elif palpite.lower() == resposta['resposta'].lower():
-            messagebox.showinfo("Correto", "Correto!", parent=root)
-            pontuacao += 2
-        else:
-            messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}", parent=root)
+        while True:
+            palpite = input_with_timeout(f"Você tem {tempo_de_resposta} segundos para responder", tempo_de_resposta, root)
+            if palpite == "dica":
+                messagebox.showinfo("Dica", resposta['dica'], parent=root)
+                pontuacao -= 1
+            elif palpite.lower() == resposta['resposta'].lower():
+                messagebox.showinfo("Correto", "Correto!", parent=root)
+                pontuacao += 2
+                break
+            else:
+                messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}", parent=root)
+                break
 
         pergunta_label.pack_forget()
 
