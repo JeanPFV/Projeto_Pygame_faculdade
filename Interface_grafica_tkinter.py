@@ -10,9 +10,9 @@ import perguntas_computador
 tempo_de_resposta = 10
 
 def input_with_timeout(prompt, timeout, root):
-    def get_input(entry, user_input_queue):
+    def get_input(entry, userinput_queue):
         user_input_queue.put(entry.get())
-        frame.pack_forget()
+        frame.destroy()
 
     user_input_queue = queue.Queue()
 
@@ -27,6 +27,7 @@ def input_with_timeout(prompt, timeout, root):
     def on_timeout():
         if user_input_queue.empty():
             user_input_queue.put("")
+        frame.destroy()
 
     root.after(timeout * 1000, on_timeout)
 
@@ -53,7 +54,7 @@ def mensagem_inicial(root):
         return True  
     return False
 
-def modo_normal(perguntas, root):
+def modo_normal(perguntas, root, tempo_de_resposta=10):
     messagebox.showinfo("Modo Normal", "Bem-vindo ao modo normal de Jogo", parent=root)
     if not mensagem_inicial(root):
         return
@@ -75,7 +76,7 @@ def modo_normal(perguntas, root):
             pontuacao += 2
         else:
             messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}", parent=root)
-        
+
         pergunta_label.pack_forget()
 
     messagebox.showinfo("Fim do jogo", f"Fim do jogo! Sua pontuação final é: {pontuacao}", parent=root)
