@@ -1,43 +1,60 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
 import random
 import threading
 import time
+import queue
 import perguntas_bio
 import perguntas_computador
 
 tempo_de_resposta = 10
 
 def input_with_timeout(prompt, timeout, root):
-    def get_input(entry, user_input):
-        user_input[0] = entry.get()
-        root.quit()
+    def get_input(entry, user_input_queue):
+        user_input_queue.put(entry.get())
+        frame.pack_forget()
 
-    user_input = [""]
-    popup = tk.Toplevel(root)
-    popup.title("Responder")
-    
-    tk.Label(popup, text=prompt).pack(side="top", fill="x", pady=10)
-    entry = tk.Entry(popup)
+    user_input_queue = queue.Queue()
+
+    frame = tk.Frame(root)
+    frame.pack(pady=10)
+
+    tk.Label(frame, text=prompt).pack(side="top", fill="x", pady=10)
+    entry = tk.Entry(frame)
     entry.pack(side="top", fill="x", pady=10)
-    entry.bind("<Return>", lambda event: get_input(entry, user_input))
-    
-    popup.after(timeout * 1000, popup.destroy)
-    popup.mainloop()
-    
-    return user_input[0]
+    entry.bind("<Return>", lambda event: get_input(entry, user_input_queue))
+
+    def on_timeout():
+        if user_input_queue.empty():
+            user_input_queue.put("")
+
+    root.after(timeout * 1000, on_timeout)
+
+    def check_input():
+        if not user_input_queue.empty():
+            root.quit()
+        else:
+            root.after(100, check_input)
+
+    root.after(100, check_input)
+    root.mainloop()
+
+    if not user_input_queue.empty():
+        return user_input_queue.get()
+    else:
+        return ""
 
 def mensagem_inicial(root):
-    resposta = messagebox.askyesno("Iniciar Jogo", "Deseja começar o jogo?")
+    resposta = messagebox.askyesno("Iniciar Jogo", "Deseja começar o jogo?", parent=root)
     if resposta:
+        messagebox.showinfo("Começando", "Começando", parent=root)
         for tempo in range(3, 0, -1):
-            time.sleep(1)
-            messagebox.showinfo("Iniciando", str(tempo))
-        return True
+            time.sleep(0.5)
+        return True  
     return False
 
 def modo_normal(perguntas, root):
-    messagebox.showinfo("Modo Normal", "Bem-vindo ao modo normal de Jogo")
+    messagebox.showinfo("Modo Normal", "Bem-vindo ao modo normal de Jogo", parent=root)
     if not mensagem_inicial(root):
         return
 
@@ -51,20 +68,20 @@ def modo_normal(perguntas, root):
 
         palpite = input_with_timeout(f"Você tem {tempo_de_resposta} segundos para responder", tempo_de_resposta, root)
         if palpite == "dica":
-            messagebox.showinfo("Dica", resposta['dica'])
+            messagebox.showinfo("Dica", resposta['dica'], parent=root)
             pontuacao -= 1
         elif palpite.lower() == resposta['resposta'].lower():
-            messagebox.showinfo("Correto", "Correto!")
+            messagebox.showinfo("Correto", "Correto!", parent=root)
             pontuacao += 2
         else:
-            messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}")
+            messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}", parent=root)
         
         pergunta_label.pack_forget()
 
-    messagebox.showinfo("Fim do jogo", f"Fim do jogo! Sua pontuação final é: {pontuacao}")
+    messagebox.showinfo("Fim do jogo", f"Fim do jogo! Sua pontuação final é: {pontuacao}", parent=root)
 
 def modo_estudo(perguntas, root):
-    messagebox.showinfo("Modo Estudo", "Bem-vindo ao modo de estudo de Jogo")
+    messagebox.showinfo("Modo Estudo", "Bem-vindo ao modo de estudo de Jogo", parent=root)
     if not mensagem_inicial(root):
         return
 
@@ -72,21 +89,16 @@ def modo_estudo(perguntas, root):
     random.shuffle(perguntas)
 
     for pergunta, resposta in perguntas:
-        pergunta_label = tk.Label(root, text=pergunta)
-        pergunta_label.pack()
-
-        palpite = input_with_timeout("Resposta: ", 0, root)
+        palpite = input_with_timeout(pergunta, 0, root)
         if palpite.lower() == resposta['resposta'].lower():
-            messagebox.showinfo("Correto", "Correto!")
+            messagebox.showinfo("Correto", "Correto!", parent=root)
         else:
-            messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}")
+            messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}", parent=root)
 
-        pergunta_label.pack_forget()
-
-    messagebox.showinfo("Fim do jogo", "Fim do jogo!")
+    messagebox.showinfo("Fim do jogo", "Fim do jogo!", parent=root)
 
 def modo_multiplayer(perguntas, root):
-    messagebox.showinfo("Modo Multiplayer", "Bem-vindo ao modo multiplayer de Jogo")
+    messagebox.showinfo("Modo Multiplayer", "Bem-vindo ao modo multiplayer de Jogo", parent=root)
     if not mensagem_inicial(root):
         return
 
@@ -97,33 +109,28 @@ def modo_multiplayer(perguntas, root):
     pontos_jogadores = [0] * numero_jogadores
 
     for i in range(numero_jogadores):
-        messagebox.showinfo(f"Jogador {i+1}", f"Jogador {i+1}")
+        messagebox.showinfo(f"Jogador {i+1}", f"Jogador {i+1}", parent=root)
 
         for pergunta, resposta in perguntas:
-            pergunta_label = tk.Label(root, text=pergunta)
-            pergunta_label.pack()
-
-            palpite = input_with_timeout(f"Você tem {tempo_de_resposta} segundos para responder", tempo_de_resposta, root)
+            palpite = input_with_timeout(pergunta, tempo_de_resposta, root)
             if palpite == "dica":
-                messagebox.showinfo("Dica", resposta['dica'])
+                messagebox.showinfo("Dica", resposta['dica'], parent=root)
                 pontos_jogadores[i] -= 1
             elif palpite.lower() == resposta['resposta'].lower():
-                messagebox.showinfo("Correto", "Correto!")
+                messagebox.showinfo("Correto", "Correto!", parent=root)
                 pontos_jogadores[i] += 2
             else:
-                messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}")
-
-            pergunta_label.pack_forget()
+                messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}", parent=root)
 
     pontos_ganhador = max(pontos_jogadores)
     jogador_ganhador = pontos_jogadores.index(pontos_ganhador)
-    messagebox.showinfo("Resultado", f"O Jogador {jogador_ganhador+1} ganhou com {pontos_ganhador} pontos!")
+    messagebox.showinfo("Resultado", f"O Jogador {jogador_ganhador+1} ganhou com {pontos_ganhador} pontos!", parent=root)
 
     for i in range(numero_jogadores):
-        messagebox.showinfo(f"Jogador {i+1}", f"Jogador {i+1}: {pontos_jogadores[i]}")
+        messagebox.showinfo(f"Jogador {i+1}", f"Jogador {i+1}: {pontos_jogadores[i]}", parent=root)
 
 def modo_adptativo(matriz, tema, dificuldade, root):
-    messagebox.showinfo("Modo Adaptativo", "Bem-vindo ao modo adaptativo de Jogo")
+    messagebox.showinfo("Modo Adaptativo", "Bem-vindo ao modo adaptativo de Jogo", parent=root)
     if not mensagem_inicial(root):
         return
 
@@ -135,26 +142,21 @@ def modo_adptativo(matriz, tema, dificuldade, root):
         random.shuffle(perguntas)
 
         for pergunta, resposta in perguntas:
-            pergunta_label = tk.Label(root, text=pergunta)
-            pergunta_label.pack()
-
-            palpite = input_with_timeout(f"Você tem {tempo_de_resposta} segundos para responder", tempo_de_resposta, root)
+            palpite = input_with_timeout(pergunta, tempo_de_resposta, root)
             if palpite == "dica":
-                messagebox.showinfo("Dica", resposta['dica'])
+                messagebox.showinfo("Dica", resposta['dica'], parent=root)
                 pontuacao -= 1
             elif palpite.lower() == resposta['resposta'].lower():
-                messagebox.showinfo("Correto", "Correto!")
+                messagebox.showinfo("Correto", "Correto!", parent=root)
                 pontuacao += 2
                 dificuldade = min(dificuldade + 1, 2)
             else:
-                messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}")
+                messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}", parent=root)
                 dificuldade = max(dificuldade - 1, 0)
-
-            pergunta_label.pack_forget()
 
         cont += 1
 
-    messagebox.showinfo("Fim do jogo", f"Fim do jogo! Sua pontuação final é: {pontuacao}")
+    messagebox.showinfo("Fim do jogo", f"Fim do jogo! Sua pontuação final é: {pontuacao}", parent=root)
 
 def iniciar_modo(modo, tema_var, dificuldade_var, root):
     tema = tema_var.get()
@@ -164,7 +166,7 @@ def iniciar_modo(modo, tema_var, dificuldade_var, root):
     elif tema == "Computadores":
         tema = 1
     else:
-        messagebox.showerror("Erro", "Tema inválido")
+        messagebox.showerror("Erro", "Tema inválido", parent=root)
         return
 
     if dificuldade == "Fácil":
@@ -174,7 +176,7 @@ def iniciar_modo(modo, tema_var, dificuldade_var, root):
     elif dificuldade == "Difícil":
         dificuldade = 2
     else:
-        messagebox.showerror("Erro", "Dificuldade inválida")
+        messagebox.showerror("Erro", "Dificuldade inválida", parent=root)
         return
 
     matriz = [
@@ -184,16 +186,22 @@ def iniciar_modo(modo, tema_var, dificuldade_var, root):
     ]
 
     perguntas = matriz[dificuldade][tema]
+
+    # Cria nova janela e fecha a anterior
+    nova_janela = tk.Tk()
+    nova_janela.title("Modo de Jogo")
+    root.destroy()
+
     if modo == "normal":
-        modo_normal(perguntas, root)
+        modo_normal(perguntas, nova_janela)
     elif modo == "estudo":
-        modo_estudo(perguntas, root)
+        modo_estudo(perguntas, nova_janela)
     elif modo == "multiplayer":
-        modo_multiplayer(perguntas, root)
+        modo_multiplayer(perguntas, nova_janela)
     elif modo == "adaptativo":
-        modo_adptativo(matriz, tema, dificuldade, root)
+        modo_adptativo(matriz, tema, dificuldade, nova_janela)
     else:
-        messagebox.showerror("Erro", "Modo de jogo inválido")
+        messagebox.showerror("Erro", "Modo de jogo inválido", parent=nova_janela)
 
 def menu():
     root = tk.Tk()
