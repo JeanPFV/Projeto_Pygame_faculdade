@@ -9,41 +9,49 @@ import perguntas_computador
 
 tempo_de_resposta = 10
 
+# Função para entrada de dados com tempo limite
 def input_with_timeout(prompt, timeout, root):
+    
+    # Função interna para obter a entrada do usuário e destruir o frame
     def get_input(entry, userinput_queue):
-        user_input_queue.put(entry.get())
-        frame.destroy()
+        user_input_queue.put(entry.get()) # Coloca a entrada do usuário na fila
+        frame.destroy() # Destroi o frame após a entrada
+
 
     user_input_queue = queue.Queue()
-
+    
+    # Cria um frame dentro da janela root
     frame = tk.Frame(root)
-    frame.pack(pady=10)
+    frame.pack(pady=10) # Adiciona padding ao frame
 
+    # Adiciona um rótulo (label) com o prompt da pergunta
     tk.Label(frame, text=prompt).pack(side="top", fill="x", pady=10)
-    entry = tk.Entry(frame)
+    entry = tk.Entry(frame) # Campo de entrada (Entry) para o usuário digitar a resposta
     entry.pack(side="top", fill="x", pady=10)
-    entry.bind("<Return>", lambda event: get_input(entry, user_input_queue))
+    entry.bind("<Return>", lambda event: get_input(entry, user_input_queue)) # Liga a tecla Enter à função get_input
 
+    # Função interna para lidar com o timeout
     def on_timeout():
-        if user_input_queue.empty():
+        if user_input_queue.empty(): # Se a fila estiver vazia, coloca uma string vazia
             user_input_queue.put("")
         frame.destroy()
 
-    root.after(timeout * 1000, on_timeout)
+    root.after(timeout * 1000, on_timeout) # Define um temporizador para chamar on_timeout após 'timeout' segundos
 
+    # Função para verificar a entrada do usuário periodicamente
     def check_input():
         if not user_input_queue.empty():
-            root.quit()
+            root.quit() # Encerra o mainloop se a fila não estiver vazia
         else:
-            root.after(100, check_input)
+            root.after(100, check_input) # Verifica novamente após 0.1 segundo
 
-    root.after(100, check_input)
-    root.mainloop()
+    root.after(100, check_input) # Começa a verificação inicial
+    root.mainloop() # Inicia o mainloop do Tkinter
 
     if not user_input_queue.empty():
-        return user_input_queue.get()
+        return user_input_queue.get()  # Retorna a entrada do usuário se disponível
     else:
-        return ""
+        return "" # Retorna uma string vazia se não houver entrada
 
 def mensagem_inicial(root):
     resposta = messagebox.askyesno("Iniciar Jogo", "Deseja começar o jogo?", parent=root)
