@@ -83,6 +83,7 @@ def modo_normal(perguntas, root, tempo_de_resposta=10):
         pergunta_label.pack_forget()
 
     messagebox.showinfo("Fim do jogo", f"Fim do jogo! Sua pontuação final é: {pontuacao}", parent=root)
+    show_custom_messagebox("FIM DE JOGO")
 
 def modo_estudo(perguntas, root):
     messagebox.showinfo("Modo Estudo", "Bem-vindo ao modo de estudo de Jogo", parent=root)
@@ -100,6 +101,7 @@ def modo_estudo(perguntas, root):
             messagebox.showinfo("Incorreto", f"Incorreto. A resposta correta é: {resposta['resposta']}", parent=root)
 
     messagebox.showinfo("Fim do jogo", "Fim do jogo!", parent=root)
+    show_custom_messagebox("FIM DE JOGO")
 
 def modo_multiplayer(perguntas, root):
     messagebox.showinfo("Modo Multiplayer", "Bem-vindo ao modo multiplayer de Jogo", parent=root)
@@ -132,6 +134,8 @@ def modo_multiplayer(perguntas, root):
 
     for i in range(numero_jogadores):
         messagebox.showinfo(f"Jogador {i+1}", f"Jogador {i+1}: {pontos_jogadores[i]}", parent=root)
+
+    show_custom_messagebox("FIM DE JOGO")
 
 def modo_adptativo(matriz, tema, dificuldade, root):
     messagebox.showinfo("Modo Adaptativo", "Bem-vindo ao modo adaptativo de Jogo", parent=root)
@@ -166,6 +170,7 @@ def modo_adptativo(matriz, tema, dificuldade, root):
         cont += 1
     
     messagebox.showinfo("Fim do jogo", f"Fim do jogo! Sua pontuação final é: {pontuacao}", parent=root)
+    show_custom_messagebox("FIM DE JOGO")
 
 def iniciar_modo(modo, tema_var, dificuldade_var, root):
     tema = tema_var.get()
@@ -211,6 +216,26 @@ def iniciar_modo(modo, tema_var, dificuldade_var, root):
         modo_adptativo(matriz, tema, dificuldade, nova_janela)
     else:
         messagebox.showerror("Erro", "Modo de jogo inválido", parent=nova_janela)
+
+def show_custom_messagebox(message):
+    root = tk.Tk()
+    root.title("Mensagem Personalizada")
+    root.geometry("899x1599")
+
+    # Carregar imagem de fundo
+    background_image = tk.PhotoImage(file="PAULÃO.png")
+
+    # Criar um canvas do tamanho da janela
+    canvas = tk.Canvas(root, width=899, height=1599)
+    canvas.pack()
+
+    # Colocar a imagem de fundo no canvas
+    canvas.create_image(0, 0, anchor=tk.NW, image=background_image)
+
+    # Caixa de mensagem personalizada
+    tk.Label(root, text=message, bg="white").place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+    root.mainloop()
 
 def menu():
     root = tk.Tk()
